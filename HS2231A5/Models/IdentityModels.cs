@@ -7,25 +7,29 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace HS2231A5.Models
-{
+    {
     // You can add profile data for the user by adding more properties to your ApplicationUser class, please visit http://go.microsoft.com/fwlink/?LinkID=317594 to learn more.
     public class ApplicationUser : IdentityUser
-    {
-        public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager)
         {
+        public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager)
+            {
             // Note the authenticationType must match the one defined in CookieAuthenticationOptions.AuthenticationType
             var userIdentity = await manager.CreateIdentityAsync(this, DefaultAuthenticationTypes.ApplicationCookie);
             // Add custom user claims here
             return userIdentity;
+            }
         }
-    }
 
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
-    {
+        {
         public ApplicationDbContext() : base("DataContext", throwIfV1Schema: false) { }
 
         // Add DbSet<TEntity> properties here
         public DbSet<RoleClaim> RoleClaims { get; set; }
+        public DbSet<Actor> Actors { get; set; }
+        public DbSet<Episode> Episodes { get; set; }
+        public DbSet<Show> Shows { get; set; }
+        public DbSet<Genre> Genres { get; set; }
 
 
 
@@ -35,7 +39,7 @@ namespace HS2231A5.Models
         // for Code First generated databases
         // For most apps, we do NOT want automatic cascade delete behaviour
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
-        {
+            {
             // First, call the base OnModelCreating method,
             // which uses the existing class definitions and conventions
 
@@ -45,11 +49,11 @@ namespace HS2231A5.Models
             // all default convention-based associations
 
             modelBuilder.Conventions.Remove<OneToManyCascadeDeleteConvention>();
-        }
+            }
 
         public static ApplicationDbContext Create()
-        {
+            {
             return new ApplicationDbContext();
+            }
         }
     }
-}
