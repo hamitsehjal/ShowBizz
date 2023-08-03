@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <!-- Do not modify the meta properties below -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="author" content="HS2231A5" />
+    <meta name="application-name" content="2231-a91f30b1-10b6-412e-985e-1a8325313f50" />
+
+    <title>@ViewBag.Title - HS2231A5</title>
+
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+
+    @{
+        var userAccount = new HS2231A5.Controllers.RequestUser(User as System.Security.Claims.ClaimsPrincipal);
+    }
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                @Html.ActionLink("HS2231A5", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li>@Html.ActionLink("Home", "Index", "Home")</li>
+                </ul>
+                @Html.Partial("_LoginPartial")
+            </div>
+        </div>
+    </div>
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
+        <footer>
+            <p>
+                <small>
+                    By submitting this assignment you agree to the following:
+                    I declare that this assignment is my own work in accordance with the Seneca Academic
+                    Policy. No part of this assignment has been copied manually or electronically from
+                    any other source (including web sites) or distributed to other students.
+                </small>
+            </p>
+            <p>&copy; StudentFirstName StudentLastName, StudentEmail@myseneca.ca, WEB524 Winter 2023</p>
+        </footer>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>
