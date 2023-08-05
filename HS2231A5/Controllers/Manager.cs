@@ -3,6 +3,7 @@ using HS2231A5.Data;
 using HS2231A5.Models;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
@@ -59,6 +60,12 @@ namespace HS2231A5.Controllers
                 // cfg.CreateMap<Product, ProductBaseViewModel>();
 
                 cfg.CreateMap<Models.RegisterViewModel, Models.RegisterViewModelForm>();
+                cfg.CreateMap<Genre, GenreBaseViewModel>();
+                cfg.CreateMap<Actor, ActorBaseViewModel>();
+                cfg.CreateMap<Actor, ActorWithShowInfoViewModel>();
+                cfg.CreateMap<ActorAddViewModel, Actor>();
+                cfg.CreateMap<Show, ShowBaseViewModel>();
+                cfg.CreateMap<Episode, EpisodeWithShowNameViewModel>();
             });
 
             mapper = config.CreateMapper();
@@ -80,7 +87,63 @@ namespace HS2231A5.Controllers
         // Remember to use the suggested naming convention, for example:
         // ProductGetAll(), ProductGetById(), ProductAdd(), ProductEdit(), and ProductDelete().
 
+        public IEnumerable<GenreBaseViewModel> GenresGetAll()
+            {
+            var results = ds.Genres.OrderBy(genre => genre.Name);
+            return mapper.Map<IEnumerable<Genre>, IEnumerable<GenreBaseViewModel>>(results);
+            }
 
+        // Actor GetAll
+        public IEnumerable<ActorBaseViewModel> ActorsGetAll()
+            {
+            var results = ds.Actors.OrderBy(actor => actor.Name);
+            return mapper.Map<IEnumerable<Actor>, IEnumerable<ActorBaseViewModel>>(results);
+            }
+
+        // Actor GetOne
+        public ActorWithShowInfoViewModel ActorGetOne(int id)
+            {
+            var result = ds.Actors
+                        .Include("Shows")
+                        .SingleOrDefault(a => a.Id == id);
+
+            return result == null ? null : mapper.Map<Actor, ActorWithShowInfoViewModel>(result);
+            }
+
+        // Actor Add New
+        public ActorWithShowInfoViewModel ActorAdd(ActorAddViewModel newActor)
+            {
+            // User name of the authenticated user
+            var user = HttpContext.Current.User.Identity.Name;
+           // newActor
+            // Attempt to add the new Actor
+            var addedItem = ds.Actors.Add(mapper.Map<ActorAddViewModel, Actor>(newActor));
+
+            // Set the executive property
+            addedItem.Executive = user;
+
+            ds.SaveChanges();
+
+            // If successful, return the added Item
+
+            return addedItem == null ? null : mapper.Map<Actor, ActorWithShowInfoViewModel>(addedItem);
+
+            }
+        public IEnumerable<ShowBaseViewModel> ShowsGetAll()
+            {
+            var results = ds.Shows.OrderBy(show => show.Name);
+            return mapper.Map<IEnumerable<Show>, IEnumerable<ShowBaseViewModel>>(results);
+            }
+
+        public IEnumerable<EpisodeWithShowNameViewModel> EpisodesWithDetailGetAll()
+            {
+            var results = ds.Episodes
+                .Include("Show")
+                .OrderBy(episode => episode.Show.Name)
+                .ThenBy(episode => episode.SeasonNumber)
+                .ThenBy(episode => episode.EpisodeNumber);
+            return mapper.Map<IEnumerable<Episode>, IEnumerable<EpisodeWithShowNameViewModel>>(results);
+            }
 
 
         // *** Add your methods above this line **
@@ -160,12 +223,31 @@ namespace HS2231A5.Controllers
                 return false;
                 }
             // Add actors
-            // https://tinyurl.com/baleChris
-            // https://tinyurl.com/leoCaprio
-            // https://tinyurl.com/gabrielM2
-            ds.Actors.Add(new Actor { Name = "Cillian Murphy", BirthDate = DateTime.ParseExact("5/25/1976", "M/d/yyyy", CultureInfo.InvariantCulture), Height = 1.72, ImageUrl = "https://tinyurl.com/cillianM31", Executive = user });
-            ds.Actors.Add(new Actor { Name = "Gabriel Macht", BirthDate = DateTime.ParseExact("1/22/1972", "M/d/yyyy", CultureInfo.InvariantCulture), Height = 1.84, ImageUrl = "https://tinyurl.com/gabrielM2", Executive = user });
-            ds.Actors.Add(new Actor { Name = "Leonardo DiCaprio", AlternateName = "Leo", BirthDate = DateTime.ParseExact("11/11/1974", "M/d/yyyy", CultureInfo.InvariantCulture), Height = 1.83, ImageUrl = "https://tinyurl.com/leoCaprio", Executive = user });
+            ds.Actors.Add(new Actor
+                {
+                Name = "Cillian Murphy",
+                BirthDate = DateTime.ParseExact("05/25/1976", "MM/d/yyyy", CultureInfo.InvariantCulture),
+                Height = 1.72,
+                ImageUrl = "https://en.wikipedia.org/wiki/Cillian_Murphy#/media/File:Cillian_Murphy-2014.jpg",
+                Executive = user
+                });
+            ds.Actors.Add(new Actor
+                {
+                Name = "Gabriel Macht",
+                BirthDate = DateTime.ParseExact("01/22/1972", "MM/d/yyyy", CultureInfo.InvariantCulture),
+                Height = 1.84,
+                ImageUrl = "https://en.wikipedia.org/wiki/Gabriel_Macht#/media/File:Gabriel_Macht_3241.jpg",
+                Executive = user
+                });
+            ds.Actors.Add(new Actor
+                {
+                Name = "Leonardo DiCaprio",
+                AlternateName = "Leo",
+                BirthDate = DateTime.ParseExact("11/11/1974", "MM/d/yyyy", CultureInfo.InvariantCulture),
+                Height = 1.83,
+                ImageUrl = "https://en.wikipedia.org/wiki/File:Leonardo_DiCaprio_2017.jpg",
+                Executive = user
+                });
 
             ds.SaveChanges();
             return true;
@@ -185,72 +267,181 @@ namespace HS2231A5.Controllers
             // Cillian Murphy
             // Fetch the Actor object
             var actor1 = ds.Actors.SingleOrDefault(a => a.Name == "Cillian Murphy");
-            if (actor1 == null) { return false; }
+            // Gabriel Macht
+            // Fetch the Actor object
+            var actor2 = ds.Actors.SingleOrDefault(actor => actor.Name == "Gabriel Macht");
+            if (actor1 == null || actor2 == null) { return false; }
             // Continue
             ds.Shows.Add(new Show
                 {
                 Actors = new Actor[] { actor1 },
                 Name = "Peaky Blinders",
                 Genre = "Docuseries",
-                ReleaseDate = DateTime.ParseExact("9/30/2014", "M/d/yyyy", CultureInfo.InvariantCulture),
-                ImageUrl = "https://tinyurl.com/peakyBlinderes",
+                ReleaseDate = DateTime.ParseExact("09/30/2014", "MM/d/yyyy", CultureInfo.InvariantCulture),
+                ImageUrl = "https://en.wikipedia.org/wiki/Peaky_Blinders_(TV_series)#/media/File:Peaky_Blinders_titlecard.jpg",
                 Coordinator = user
 
                 });
 
-            ds.SaveChanges();
-
-            // Gabriel Macht
-            // Fetch the Actor object
-            var actor2 = ds.Actors.SingleOrDefault(actor => actor.Name == "Gabriel Macht");
-            if(actor2 == null) { return false; };
             ds.Shows.Add(new Show
                 {
                 Actors = new Actor[] { actor2 },
                 Name = "Suits",
                 Genre = "Dramas",
-                ReleaseDate = DateTime.ParseExact("9/30/2014", "M/d/yyyy", CultureInfo.InvariantCulture),
-                ImageUrl = "https://tinyurl.com/suitHarvey",
+                ReleaseDate = DateTime.ParseExact("03/13/2011", "MM/d/yyyy", CultureInfo.InvariantCulture),
+                ImageUrl = "https://en.wikipedia.org/wiki/Suits_(American_TV_series)#/media/File:Title_card_for_the_US_TV_show_Suits.png",
                 Coordinator = user
 
                 });
             ds.SaveChanges();
             return true;
             }
-        
+
         // LoadEpisodes()
-
-        // https://tinyurl.com/suitEpisode1
-        // https://tinyurl.com/suitEpisode2
-        // https://tinyurl.com/suitEpisode3
-
-        // https://tinyurl.com/peakyEpisode1
-        // https://tinyurl.com/peakyEpisode2
-        // https://tinyurl.com/peakyEpisode3
-        public bool LoadData()
+        public bool LoadEpisodes()
             {
-            // User name
             var user = HttpContext.Current.User.Identity.Name;
+            // Return if there's existing data
+            if (ds.Episodes.Count() > 0) { return false; }
 
-            // Monitor the progress
-            bool done = false;
+            // Add Episode's data
+            var show1 = ds.Shows.SingleOrDefault(s => s.Name == "Peaky Blinders");
+            var show2 = ds.Shows.SingleOrDefault(s => s.Name == "Suits");
 
-            // *** Role claims ***
-            if (ds.RoleClaims.Count() == 0)
+            if (show1 == null || show2 == null) { return false; }
+
+            // Continue
+
+            // Peaky Blinders - Season 1; Episode 1
+            ds.Episodes.Add(new Episode
                 {
-                // Add role claims here
+                Show = show1,
+                ShowId = show1.Id,
+                SeasonNumber = 1,
+                Name = "Rise of the Shelby Gang",
+                EpisodeNumber = 1,
+                Genre = "Docuseries",
+                AirDate = DateTime.ParseExact("09/12/2013", "MM/d/yyyy", CultureInfo.InvariantCulture),
+                ImageUrl = "https://tinyurl.com/peakyEpisode1",
+                Clerk = user
+                });
 
-                //ds.SaveChanges();
-                //done = true;
-                }
+            // Peaky Blinders - Season 1; Episode 2
+            ds.Episodes.Add(new Episode
+                {
+                Show = show1,
+                ShowId = show1.Id,
+                SeasonNumber = 1,
+                EpisodeNumber = 2,
+                Genre = "Docuseries",
+                Name = "The Dark Streets of Birmingham",
+                AirDate = DateTime.ParseExact("09/19/2013", "MM/d/yyyy", CultureInfo.InvariantCulture),
+                ImageUrl = "https://tinyurl.com/peakyEpisode2",
+                Clerk = user
+                });
 
-            return done;
+            // Peaky Blinders - Season 2; Episode 1
+            ds.Episodes.Add(new Episode
+                {
+                Show = show1,
+                ShowId = show1.Id,
+                SeasonNumber = 2,
+                EpisodeNumber = 1,
+                Genre = "Docuseries",
+                Name = "Blood and Brotherhood",
+                AirDate = DateTime.ParseExact("03/29/2014", "MM/d/yyyy", CultureInfo.InvariantCulture),
+                ImageUrl = "https://tinyurl.com/peakyEpisode3",
+                Clerk = user
+                });
+
+
+            // Suits - Season 1; Episode 1
+            ds.Episodes.Add(new Episode
+                {
+                Show = show2,
+                ShowId = show2.Id,
+                SeasonNumber = 1,
+                EpisodeNumber = 1,
+                Genre = "Dramas",
+                Name = "Pilot",
+                AirDate = DateTime.ParseExact("06/23/2011", "MM/d/yyyy", CultureInfo.InvariantCulture),
+                ImageUrl = "https://www.imdb.com/title/tt1632701/mediaviewer/rm3134549248?ref_=ttmi_mi_all_sf_2",
+                Clerk = user
+                });
+
+
+            // Suits - Season 2; Episode 1
+            ds.Episodes.Add(new Episode
+                {
+                Show = show2,
+                ShowId = show2.Id,
+                SeasonNumber = 2,
+                EpisodeNumber = 1,
+                Genre = "Dramas",
+                Name = "Errors and Omissions",
+                AirDate = DateTime.ParseExact("07/31/2011", "MM/d/yyyy", CultureInfo.InvariantCulture),
+                ImageUrl = "https://tinyurl.com/suitEpisode2",
+                Clerk = user
+                });
+
+            // Suits - Season 2; Episode 2
+            ds.Episodes.Add(new Episode
+                {
+                Show = show2,
+                ShowId = show2.Id,
+                SeasonNumber = 2,
+                EpisodeNumber = 2,
+                Genre = "Dramas",
+                Name = "Inside Track",
+                AirDate = DateTime.ParseExact("08/17/2011", "MM/d/yyyy", CultureInfo.InvariantCulture),
+                ImageUrl = "https://tinyurl.com/suitEpisode3",
+                Clerk = user
+                });
+
+            ds.SaveChanges();
+            return true;
             }
+
+        //public bool LoadData()
+        //    {
+        //    // User name
+        //    var user = HttpContext.Current.User.Identity.Name;
+
+        //    // Monitor the progress
+        //    bool done = false;
+
+        //    // *** Role claims ***
+        //    if (ds.RoleClaims.Count() == 0)
+        //        {
+        //        // Add role claims here
+
+        //        //ds.SaveChanges();
+        //        //done = true;
+        //        }
+
+        //    return done;
+        //    }
 
         public bool RemoveData()
             {
             try
                 {
+                foreach (var e in ds.Episodes)
+                    {
+                    ds.Entry(e).State = System.Data.Entity.EntityState.Deleted;
+                    }
+                foreach (var e in ds.Shows)
+                    {
+                    ds.Entry(e).State = System.Data.Entity.EntityState.Deleted;
+                    }
+                foreach (var e in ds.Actors)
+                    {
+                    ds.Entry(e).State = System.Data.Entity.EntityState.Deleted;
+                    }
+                foreach (var e in ds.Genres)
+                    {
+                    ds.Entry(e).State = System.Data.Entity.EntityState.Deleted;
+                    }
                 foreach (var e in ds.RoleClaims)
                     {
                     ds.Entry(e).State = System.Data.Entity.EntityState.Deleted;

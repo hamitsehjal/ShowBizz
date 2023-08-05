@@ -6,15 +6,17 @@ using System.Web.Mvc;
 
 namespace HS2231A5.Controllers
     {
-    public class HomeController : Controller
+    public class GenreController : Controller
         {
         // Reference to the manager object
-        Manager m = new Manager();
-
+        private Manager m = new Manager();
+        // GET: Genre
         public ActionResult Index()
             {
-            m.LoadRoles();
-            return View();
+            // fetch the collection
+            var genres = m.GenresGetAll();
+            return View(genres);
             }
+
         }
     }

@@ -1,0 +1,88 @@
+﻿@model HS2231A5.Models.ActorWithShowInfoViewModel
+
+@{
+    ViewBag.Title = "Details";
+    var userAccount = new HS2231A5.Controllers.RequestUser(User as System.Security.Claims.ClaimsPrincipal);
+
+}
+
+
+<div>
+    <h2>@Model.Name</h2>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.AlternateName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.AlternateName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.BirthDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.BirthDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Height)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Height)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ImageUrl)
+        </dt>
+
+        <dd>
+            <img src="@Model.ImageUrl" alt="@Model.Name" style="max-height:150px; max-width:150px;" />
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Executive)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Executive)
+        </dd>
+
+    </dl>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.ShowsCount)
+            <span class="badge">@Html.DisplayFor(model => model.ShowsCount)</span>
+        </dt>
+        <dd>
+            @foreach (var item in Model.Shows)
+                {
+                <p>@item.Name</p>
+
+                }
+        </dd>
+    </dl>
+</div>
+<p>
+    @{ if (userAccount.HasRoleClaim("Coordinator"))
+            {
+
+           @Html.ActionLink("Add New Show", "Create") 
+            <span> | </span>
+            }
+    }
+
+    @Html.ActionLink("Back to List", "Index")
+</p>
