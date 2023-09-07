@@ -43,6 +43,14 @@ namespace HS2231A5.Data
         [Required, StringLength(250)]
         public string Clerk { get; set; }
 
+        // Premise
+        public string Premise { get; set; }
+
+        // Video Media Item
+
+        public string VideoContentType { get; set; }
+        public byte[] Video { get; set; }
+
         // ShowId
         public int ShowId { get; set; }
 

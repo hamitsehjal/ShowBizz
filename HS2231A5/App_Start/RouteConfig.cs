@@ -13,6 +13,7 @@ namespace HS2231A5
         {
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
+            // Activate Attribute Routing
             routes.MapMvcAttributeRoutes();
 
             routes.MapRoute(

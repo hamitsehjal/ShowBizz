@@ -29,6 +29,10 @@ namespace HS2231A5.Models
         [Display(Name = "Image")]
         public string ImageUrl { get; set; }
 
+        [DataType(DataType.MultilineText)]
+        [Display(Name = "Biography")]
+        public string Biography { get; set; }
+
 
         }
     public class ActorBaseViewModel : ActorAddViewModel
@@ -45,11 +49,34 @@ namespace HS2231A5.Models
         public ActorWithShowInfoViewModel()
             {
             Shows = new HashSet<ShowBaseViewModel>();
+            ActorMediaItems = new HashSet<ActorMediaItemBaseViewModel>();
+            Photos = new HashSet<ActorMediaItemBaseViewModel>();
+            Documents = new HashSet<ActorMediaItemBaseViewModel>();
+            AudioClips = new HashSet<ActorMediaItemBaseViewModel>();
+            VideoClips = new HashSet<ActorMediaItemBaseViewModel>();
             }
         public IEnumerable<ShowBaseViewModel> Shows { get; set; }
-        [Display(Name="Appeared On")]
-   
+        [Display(Name = "Appeared On")]
+
         public int ShowsCount { get; set; }
+
+        public IEnumerable<ActorMediaItemBaseViewModel> ActorMediaItems { get; set; }
+
+        [Display(Name = "Photos")]
+        public IEnumerable<ActorMediaItemBaseViewModel> Photos { get; set; }
+
+        [Display(Name = "Documents")]
+
+        public IEnumerable<ActorMediaItemBaseViewModel> Documents { get; set; }
+
+        [Display(Name = "Audio Clips")]
+
+        public IEnumerable<ActorMediaItemBaseViewModel> AudioClips { get; set; }
+
+        [Display(Name = "Video Clips")]
+
+        public IEnumerable<ActorMediaItemBaseViewModel> VideoClips { get; set; }
+
         }
 
     public class ActorAddFormViewModel
@@ -65,6 +92,7 @@ namespace HS2231A5.Models
         [Display(Name = "Birth Date")]
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy/MM/dd}")]
+        [RegularExpression(@"^\d{4}-\d{2}-\d{2}$", ErrorMessage = "Please enter a Valid Date")]
         public DateTime? BirthDate { get; set; }
 
         [Display(Name = "Height(m)")]
@@ -76,6 +104,9 @@ namespace HS2231A5.Models
         [Display(Name = "Image")]
         public string ImageUrl { get; set; }
 
+        [DataType(DataType.MultilineText)]
+        [Display(Name = "Biography")]
+        public string Biography { get; set; }
         }
 
 

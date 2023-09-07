@@ -1,0 +1,120 @@
+﻿@model HS2231A5.Models.EpisodeWithShowNameViewModel
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>@Model.Name</h2>
+
+<div>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.ShowName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ShowName)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.SeasonNumber)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.SeasonNumber)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.EpisodeNumber)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.EpisodeNumber)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Genre)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Genre)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.AirDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.AirDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ImageUrl)
+        </dt>
+
+        <dd>
+            <img src="@Model.ImageUrl" alt="@Model.Name" style="max-height: 150px; max-width:150px;" />
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Clerk)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Clerk)
+        </dd>
+
+
+
+
+    </dl>
+    <div>
+        @{ if (!string.IsNullOrWhiteSpace(Model.Premise))
+                {
+                <hr />
+                <dl class="dl-horizontal">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.Premise)
+                    </dt>
+                    <dd class="well">
+                        @Html.Raw(Model.Premise)
+                    </dd>
+                </dl>
+                }
+        }
+    </div>
+
+    <div>
+
+        @{ if (!string.IsNullOrWhiteSpace(Model.VideoContentType))
+                {
+
+                <hr />
+                <dl class="dl-horizontal">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.VideoUrl)
+                    </dt>
+                    <dd>
+                        @{
+                            var alt = $"{Model.Name} - {Model.ShowName}";
+                            var url = Url.Action("Video", "Episode", new { id = Model.Id });
+                        }
+                        <video controls src="@url" alt="@alt" class="img-responsive" style="height:300px; width:400px;" />
+                    </dd>
+                </dl>
+                }
+        }
+    </div>
+   
+</div>
+<p>
+    @Html.ActionLink("Back to List", "Index")
+</p>

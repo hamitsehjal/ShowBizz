@@ -6,15 +6,8 @@
 }
 
 
-<h2>Index</h2>
-@{ if (userAccount.HasRoleClaim("Coordinator"))
-        {
+<h2>Show List</h2>
 
-        <p>
-            @Html.ActionLink("Create New", "Create")
-        </p>
-        }
-}
 <table class="table">
     <tr>
         <th>

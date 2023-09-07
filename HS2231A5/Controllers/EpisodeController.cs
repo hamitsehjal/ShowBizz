@@ -18,75 +18,37 @@ namespace HS2231A5.Controllers
             }
 
         // GET: Episode/Details/5
-        public ActionResult Details(int id)
+        public ActionResult Details(int? id)
             {
-            return View();
+            // fetch the object
+            var episode=m.EpisodeWithDetailById(id.GetValueOrDefault());
+
+            if (episode == null)
+                return HttpNotFound();
+
+            return View(episode);
             }
 
-        // GET: Episode/Create
-        public ActionResult Create()
-            {
-            return View();
-            }
 
-        // POST: Episode/Create
-        [HttpPost]
-        public ActionResult Create(FormCollection collection)
+        // GET: Video/{id}
+        [Route("Video/{id}")]
+        public ActionResult Video(int? id)
             {
-            try
+            // Attempt to get the matching object
+            var obj=m.EpisodeVideoGetById(id.GetValueOrDefault());
+
+            if (obj == null)
                 {
-                // TODO: Add insert logic here
-
-                return RedirectToAction("Index");
+                return HttpNotFound();
                 }
-            catch
-                {
-                return View();
-                }
-            }
 
-        // GET: Episode/Edit/5
-        public ActionResult Edit(int id)
-            {
-            return View();
-            }
-
-        // POST: Episode/Edit/5
-        [HttpPost]
-        public ActionResult Edit(int id, FormCollection collection)
-            {
-            try
+            else
                 {
-                // TODO: Add update logic here
-
-                return RedirectToAction("Index");
-                }
-            catch
-                {
-                return View();
+                return File(obj.Video,obj.VideoContentType);
                 }
             }
 
-        // GET: Episode/Delete/5
-        public ActionResult Delete(int id)
-            {
-            return View();
-            }
 
-        // POST: Episode/Delete/5
-        [HttpPost]
-        public ActionResult Delete(int id, FormCollection collection)
-            {
-            try
-                {
-                // TODO: Add delete logic here
 
-                return RedirectToAction("Index");
-                }
-            catch
-                {
-                return View();
-                }
-            }
         }
     }

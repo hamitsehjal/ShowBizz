@@ -27,8 +27,12 @@ namespace HS2231A5
 
             // Add more conditions here as you need them
             // If you do, then add a custom method to the ErrorsController too
-            if (code == 404) { this.HandleError("NotFound"); }
-            if (code >= 500) { this.HandleError("ServerError"); }
+            if (code == 404) { 
+                this.HandleError("NotFound"); 
+                }
+            if (code >= 500) { 
+                this.HandleError("ServerError");
+                }
         }
 
         private void HandleError(string action)

@@ -31,6 +31,8 @@ namespace HS2231A5.Models
         public DbSet<Show> Shows { get; set; }
         public DbSet<Genre> Genres { get; set; }
 
+        public DbSet<ActorMediaItem> ActorMediaItems { get; set; }
+
 
 
 

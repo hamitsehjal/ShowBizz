@@ -74,12 +74,147 @@
                 }
         </dd>
     </dl>
+    <div>
+        @{ if (!string.IsNullOrWhiteSpace(Model.Biography))
+                {
+                <hr />
+                <dl class="dl-horizontal">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.Biography)
+                    </dt>
+                    <dd class="well">
+                        @Html.Raw(Model.Biography)
+                    </dd>
+                </dl>
+                }
+        }
+    </div>
+
+
+    <div>
+        <hr />
+
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.Photos)
+            </dt>
+            <dd>
+                @if (Model.Photos.Count() == 0)
+                    {
+                    <span>(none)</span>
+                    }
+                else
+                    {
+                    foreach (var item in Model.Photos)
+                        {
+                        <div class="col-md-4 col-sm-5 col-xs-10">
+                            <img src="~/Content/@item.Id" alt="@item.Caption" title="@item.Caption" class="img-responsive img-rounded" style="height:200px;">
+                            <span class="small">@item.Caption</span><br>
+                        </div>
+                        }
+                    }
+            </dd>
+        </dl>
+
+    </div>
+
+
+    <div>
+        <hr />
+
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.Documents)
+            </dt>
+            <dd>
+                @if (Model.Documents.Count() == 0)
+                    {
+                    <span>(none)</span>
+                    }
+                else
+                    {
+                    foreach (var item in Model.Documents)
+                        {
+            <div class="col-md-4 col-sm-5 col-xs-10">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg" alt="pdf-icon" class="img-responsive img-rounded" style="height:50px;"/>
+                <a href="~/MediaItemDownload/@item.Id" alt="@item.Caption">@item.Caption</a>
+            </div>
+                        }
+                    }
+            </dd>
+        </dl>
+
+    </div>
+
+    <div>
+        <hr />
+
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.AudioClips)
+            </dt>
+            <dd>
+                @if (Model.AudioClips.Count() == 0)
+                    {
+                    <span>(none)</span>
+                    }
+                else
+                    {
+                    foreach (var item in Model.AudioClips)
+                        {
+                        <div class="col-md-4 col-sm-5 col-xs-10">
+                            <audio controls src="~/Content/@item.Id" alt="@item.Caption" title="@item.Caption" />
+                            <span class="small">@item.Caption</span><br>
+                        </div>
+                        }
+                    }
+            </dd>
+        </dl>
+
+    </div>
+    <div>
+        <hr />
+
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.VideoClips)
+            </dt>
+            <dd>
+                @if (Model.VideoClips.Count() == 0)
+                    {
+                    <span>(none)</span>
+                    }
+                else
+                    {
+                    foreach (var item in Model.VideoClips)
+                        {
+            <div class="col-md-4 col-sm-5 col-xs-10">
+                <video controls src="~/Content/@item.Id" alt="@item.Caption" title="@item.Caption" class="img-responsive"/>
+                    <span class="small">@item.Caption</span>
+                    <br>
+            </div>
+
+                        
+                        }
+                    }
+            </dd>
+        </dl>
+
+    </div>
+
 </div>
 <p>
+    @{ if (userAccount.HasRoleClaim("Executive"))
+            {
+
+            @Html.ActionLink("Add Media Item","AddMediaItem",new {id=Model.Id})
+            <span> | </span>
+            } }
+
     @{ if (userAccount.HasRoleClaim("Coordinator"))
             {
 
-           @Html.ActionLink("Add New Show", "Create") 
+            @Html.ActionLink("Add New Show", "AddShow", new { id = Model.Id })
             <span> | </span>
             }
     }

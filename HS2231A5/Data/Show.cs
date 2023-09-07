@@ -36,6 +36,9 @@ namespace HS2231A5.Data
         [Required, StringLength(250)]
         public string Coordinator { get; set; }
 
+        // Premise
+        public string Premise { get; set; }
+
 
         // Navigation Properties
         public ICollection<Actor> Actors { get; set; }

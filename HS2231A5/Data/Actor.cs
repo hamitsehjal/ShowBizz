@@ -6,13 +6,14 @@ using System.Linq;
 using System.Text;
 
 namespace HS2231A5.Data
-{
-    public class Actor
     {
-        public Actor()
+    public class Actor
         {
+        public Actor()
+            {
             Shows = new HashSet<Show>();
-        }
+            ActorMediaItems = new HashSet<ActorMediaItem>();
+            }
         public int Id { get; set; }
 
         // Actor's Full name; For example: "Dwayne Johnson"
@@ -37,9 +38,12 @@ namespace HS2231A5.Data
         [Required, StringLength(250)]
         public string Executive { get; set; }
 
+        // Biography
+        public string Biography { get; set; }
         // Navigation Properties
         public ICollection<Show> Shows { get; set; }
+        public ICollection<ActorMediaItem> ActorMediaItems { get; set; }
 
 
+        }
     }
-}

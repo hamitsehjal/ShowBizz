@@ -63,9 +63,20 @@ namespace HS2231A5.Controllers
                 cfg.CreateMap<Genre, GenreBaseViewModel>();
                 cfg.CreateMap<Actor, ActorBaseViewModel>();
                 cfg.CreateMap<Actor, ActorWithShowInfoViewModel>();
+                cfg.CreateMap<ActorAddViewModel, ActorAddFormViewModel>();
                 cfg.CreateMap<ActorAddViewModel, Actor>();
                 cfg.CreateMap<Show, ShowBaseViewModel>();
+                cfg.CreateMap<Show, ShowWithInfoViewModel>();
+                cfg.CreateMap<ShowAddViewModel, ShowAddFormViewModel>();
+                cfg.CreateMap<ShowAddViewModel, Show>();
                 cfg.CreateMap<Episode, EpisodeWithShowNameViewModel>();
+                cfg.CreateMap<Episode, EpisodeBaseViewModel>();
+                cfg.CreateMap<EpisodeAddViewModel, Episode>();
+                cfg.CreateMap<EpisodeAddViewModel, EpisodeAddFormViewModel>();
+                cfg.CreateMap<Episode, EpisodeVideoViewModel>();
+                cfg.CreateMap<ActorMediaItemAddViewModel, ActorMediaItem>();
+                cfg.CreateMap<ActorMediaItem, ActorMediaItemBaseViewModel>();
+                cfg.CreateMap<ActorMediaItem, ActorMediaItemWithContentViewModel>();
             });
 
             mapper = config.CreateMapper();
@@ -101,10 +112,11 @@ namespace HS2231A5.Controllers
             }
 
         // Actor GetOne
-        public ActorWithShowInfoViewModel ActorGetOne(int id)
+        public ActorWithShowInfoViewModel ActorWithShowInfoGetById(int id)
             {
             var result = ds.Actors
                         .Include("Shows")
+                        .Include("ActorMediaItems")
                         .SingleOrDefault(a => a.Id == id);
 
             return result == null ? null : mapper.Map<Actor, ActorWithShowInfoViewModel>(result);
@@ -115,7 +127,7 @@ namespace HS2231A5.Controllers
             {
             // User name of the authenticated user
             var user = HttpContext.Current.User.Identity.Name;
-           // newActor
+            // newActor
             // Attempt to add the new Actor
             var addedItem = ds.Actors.Add(mapper.Map<ActorAddViewModel, Actor>(newActor));
 
@@ -129,12 +141,93 @@ namespace HS2231A5.Controllers
             return addedItem == null ? null : mapper.Map<Actor, ActorWithShowInfoViewModel>(addedItem);
 
             }
+
+        // ActorMediaItem Add New
+        public ActorWithShowInfoViewModel ActorMediaItemAdd(ActorMediaItemAddViewModel newMediaItem)
+            {
+            // Attempt to find the associated object
+            var actor = ds.Actors.Find(newMediaItem.ActorId);
+
+            if (actor == null)
+                {
+                return null;
+                }
+
+            var addedItem = new ActorMediaItem();
+            ds.ActorMediaItems.Add(addedItem);
+
+            addedItem.Caption = newMediaItem.Caption;
+            addedItem.Actor = actor;
+
+            // Handle the uploaded Content
+            // Extract the bytes from the HttpPostedFile Object
+            byte[] contentBytes = new byte[newMediaItem.ContentUpload.ContentLength];
+            newMediaItem.ContentUpload.InputStream.Read(contentBytes, 0, newMediaItem.ContentUpload.ContentLength);
+
+            // Configure the new object's properties
+            addedItem.Content = contentBytes;
+            addedItem.ContentType = newMediaItem.ContentUpload.ContentType;
+
+
+            ds.SaveChanges();
+            return (addedItem == null) ? null : mapper.Map<Actor, ActorWithShowInfoViewModel>(actor);
+            }
+
+        public ActorMediaItemWithContentViewModel ActorMediaItemGetById(int id)
+            {
+            var obj = ds.ActorMediaItems.Find(id);
+
+            return (obj == null) ? null : mapper.Map<ActorMediaItem, ActorMediaItemWithContentViewModel>(obj);
+            }
+
+
         public IEnumerable<ShowBaseViewModel> ShowsGetAll()
             {
             var results = ds.Shows.OrderBy(show => show.Name);
             return mapper.Map<IEnumerable<Show>, IEnumerable<ShowBaseViewModel>>(results);
             }
 
+        // GET: SHOW BY ID (DETAILS)
+        public ShowWithInfoViewModel ShowsGetOne(int id)
+            {
+            var result = ds.Shows
+                .Include("Actors")
+                .Include("Episodes")
+                .SingleOrDefault(show => show.Id == id);
+
+            return result == null ? null : mapper.Map<Show, ShowWithInfoViewModel>(result);
+            }
+
+        // Show Add New
+        public ShowWithInfoViewModel ShowAdd(ShowAddViewModel newShow)
+            {
+            // User name of the authenticated user
+            var user = HttpContext.Current.User.Identity.Name;
+            var actorIds = newShow.ActorIds;
+            // Attempt to find the associated objects
+            var actors = ds.Actors.Where(actor => actorIds.Contains(actor.Id)).ToList();
+
+            if (actors.Count == 0)
+                {
+                return null;
+                }
+            // Attempt to add the new Actor
+            var addedItem = ds.Shows.Add(mapper.Map<ShowAddViewModel, Show>(newShow));
+
+            // Set the associated item property
+            addedItem.Actors = actors;
+            // Set the 'coordinator' property
+            addedItem.Coordinator = user;
+
+            ds.SaveChanges();
+
+            // If successful, return the added Item
+
+            return addedItem == null ? null : mapper.Map<Show, ShowWithInfoViewModel>(addedItem);
+
+            }
+
+        // All Episodes with Show Name
         public IEnumerable<EpisodeWithShowNameViewModel> EpisodesWithDetailGetAll()
             {
             var results = ds.Episodes
@@ -143,6 +236,53 @@ namespace HS2231A5.Controllers
                 .ThenBy(episode => episode.SeasonNumber)
                 .ThenBy(episode => episode.EpisodeNumber);
             return mapper.Map<IEnumerable<Episode>, IEnumerable<EpisodeWithShowNameViewModel>>(results);
+            }
+
+        // GET Episode by Id with Show Name
+        public EpisodeWithShowNameViewModel EpisodeWithDetailById(int id)
+            {
+            var result = ds.Episodes
+                .Include("Show")
+                .SingleOrDefault(episode => episode.Id == id);
+
+            return mapper.Map<Episode, EpisodeWithShowNameViewModel>(result);
+
+            }
+
+        // Add New Episode
+        public EpisodeWithShowNameViewModel EpisodeAdd(EpisodeAddViewModel newEpisode)
+            {
+            // Get the current authenticated User
+            var user = HttpContext.Current.User.Identity.Name;
+            // Attempt to find the associated object
+            var show = ds.Shows.Find(newEpisode.ShowId);
+
+            if (show == null) return null;
+
+            // Attempt to add the new Episode
+            var addedItem = ds.Episodes.Add(mapper.Map<EpisodeAddViewModel, Episode>(newEpisode));
+
+
+            // Extract the bytes from the HttpPostedFile Object
+            byte[] videoBytes = new byte[newEpisode.VideoUpload.ContentLength];
+            newEpisode.VideoUpload.InputStream.Read(videoBytes, 0, newEpisode.VideoUpload.ContentLength);
+
+            // Configure the new object's properties
+            addedItem.Video = videoBytes;
+            addedItem.VideoContentType = newEpisode.VideoUpload.ContentType;
+
+            // Set the associated item property (show)
+            addedItem.Show = show;
+            addedItem.Clerk = user;
+
+            ds.SaveChanges();
+            return (addedItem == null) ? null : mapper.Map<Episode, EpisodeWithShowNameViewModel>(addedItem);
+            }
+
+        public EpisodeVideoViewModel EpisodeVideoGetById(int id)
+            {
+            var obj = ds.Episodes.Find(id);
+            return (obj == null) ? null : mapper.Map<Episode, EpisodeVideoViewModel>(obj);
             }
 
 
@@ -228,7 +368,7 @@ namespace HS2231A5.Controllers
                 Name = "Cillian Murphy",
                 BirthDate = DateTime.ParseExact("05/25/1976", "MM/d/yyyy", CultureInfo.InvariantCulture),
                 Height = 1.72,
-                ImageUrl = "https://en.wikipedia.org/wiki/Cillian_Murphy#/media/File:Cillian_Murphy-2014.jpg",
+                ImageUrl = "https://cdn.images.express.co.uk/img/dynamic/20/590x/secondary/Cillian-Murphy-879058.jpg",
                 Executive = user
                 });
             ds.Actors.Add(new Actor
@@ -236,16 +376,16 @@ namespace HS2231A5.Controllers
                 Name = "Gabriel Macht",
                 BirthDate = DateTime.ParseExact("01/22/1972", "MM/d/yyyy", CultureInfo.InvariantCulture),
                 Height = 1.84,
-                ImageUrl = "https://en.wikipedia.org/wiki/Gabriel_Macht#/media/File:Gabriel_Macht_3241.jpg",
+                ImageUrl = "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/mc0zlgOviaVnfrIQ0igHDg4sHH0.jpg",
                 Executive = user
                 });
             ds.Actors.Add(new Actor
                 {
-                Name = "Leonardo DiCaprio",
-                AlternateName = "Leo",
+                Name = "Daniel Radcliffe",
+                AlternateName = "Potter",
                 BirthDate = DateTime.ParseExact("11/11/1974", "MM/d/yyyy", CultureInfo.InvariantCulture),
                 Height = 1.83,
-                ImageUrl = "https://en.wikipedia.org/wiki/File:Leonardo_DiCaprio_2017.jpg",
+                ImageUrl = "https://upload.wikimedia.org/wikipedia/commons/2/2e/Daniel_Radcliffe_%2814594645950%29_%28cropped%29.jpg",
                 Executive = user
                 });
 
@@ -278,7 +418,7 @@ namespace HS2231A5.Controllers
                 Name = "Peaky Blinders",
                 Genre = "Docuseries",
                 ReleaseDate = DateTime.ParseExact("09/30/2014", "MM/d/yyyy", CultureInfo.InvariantCulture),
-                ImageUrl = "https://en.wikipedia.org/wiki/Peaky_Blinders_(TV_series)#/media/File:Peaky_Blinders_titlecard.jpg",
+                ImageUrl = "https://upload.wikimedia.org/wikipedia/commons/1/13/Peaky_Blinders_Logo.png",
                 Coordinator = user
 
                 });
@@ -289,7 +429,7 @@ namespace HS2231A5.Controllers
                 Name = "Suits",
                 Genre = "Dramas",
                 ReleaseDate = DateTime.ParseExact("03/13/2011", "MM/d/yyyy", CultureInfo.InvariantCulture),
-                ImageUrl = "https://en.wikipedia.org/wiki/Suits_(American_TV_series)#/media/File:Title_card_for_the_US_TV_show_Suits.png",
+                ImageUrl = "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/vQiryp6LioFxQThywxbC6TuoDjy.jpg",
                 Coordinator = user
 
                 });
@@ -322,7 +462,7 @@ namespace HS2231A5.Controllers
                 EpisodeNumber = 1,
                 Genre = "Docuseries",
                 AirDate = DateTime.ParseExact("09/12/2013", "MM/d/yyyy", CultureInfo.InvariantCulture),
-                ImageUrl = "https://tinyurl.com/peakyEpisode1",
+                ImageUrl = "https://images.liverpoolmuseums.org.uk/styles/dynamic_medium/public/2021-12/Peaky%20Blinders.jpg",
                 Clerk = user
                 });
 
@@ -336,7 +476,7 @@ namespace HS2231A5.Controllers
                 Genre = "Docuseries",
                 Name = "The Dark Streets of Birmingham",
                 AirDate = DateTime.ParseExact("09/19/2013", "MM/d/yyyy", CultureInfo.InvariantCulture),
-                ImageUrl = "https://tinyurl.com/peakyEpisode2",
+                ImageUrl = "https://images.liverpoolmuseums.org.uk/2021-12/Port%20Sunlight-Peaky%20Blinders%20Filming%20Location.jpeg",
                 Clerk = user
                 });
 
@@ -350,7 +490,7 @@ namespace HS2231A5.Controllers
                 Genre = "Docuseries",
                 Name = "Blood and Brotherhood",
                 AirDate = DateTime.ParseExact("03/29/2014", "MM/d/yyyy", CultureInfo.InvariantCulture),
-                ImageUrl = "https://tinyurl.com/peakyEpisode3",
+                ImageUrl = "https://news24viral.com/wp-content/uploads/2020/10/1602703174_394_Peaky-Blinders-season-6-These-premonitory-symbols-hidden-in-the.jpg",
                 Clerk = user
                 });
 
@@ -365,7 +505,7 @@ namespace HS2231A5.Controllers
                 Genre = "Dramas",
                 Name = "Pilot",
                 AirDate = DateTime.ParseExact("06/23/2011", "MM/d/yyyy", CultureInfo.InvariantCulture),
-                ImageUrl = "https://www.imdb.com/title/tt1632701/mediaviewer/rm3134549248?ref_=ttmi_mi_all_sf_2",
+                ImageUrl = "https://www.themoviedb.org/t/p/w533_and_h300_bestv2/or0E36KfzJYZwqXeiCfm1JgepKF.jpg",
                 Clerk = user
                 });
 
@@ -380,7 +520,7 @@ namespace HS2231A5.Controllers
                 Genre = "Dramas",
                 Name = "Errors and Omissions",
                 AirDate = DateTime.ParseExact("07/31/2011", "MM/d/yyyy", CultureInfo.InvariantCulture),
-                ImageUrl = "https://tinyurl.com/suitEpisode2",
+                ImageUrl = "https://www.themoviedb.org/t/p/w500_and_h282_face/7b7m1zekRpU7LiDRzYEiensNgHy.jpg",
                 Clerk = user
                 });
 
@@ -394,7 +534,7 @@ namespace HS2231A5.Controllers
                 Genre = "Dramas",
                 Name = "Inside Track",
                 AirDate = DateTime.ParseExact("08/17/2011", "MM/d/yyyy", CultureInfo.InvariantCulture),
-                ImageUrl = "https://tinyurl.com/suitEpisode3",
+                ImageUrl = "https://www.themoviedb.org/t/p/w500_and_h282_face/jAHP8Ru5Gml9YwKnhykpft0EQ8V.jpg",
                 Clerk = user
                 });
 
@@ -431,6 +571,10 @@ namespace HS2231A5.Controllers
                     ds.Entry(e).State = System.Data.Entity.EntityState.Deleted;
                     }
                 foreach (var e in ds.Shows)
+                    {
+                    ds.Entry(e).State = System.Data.Entity.EntityState.Deleted;
+                    }
+                foreach(var e in ds.ActorMediaItems)
                     {
                     ds.Entry(e).State = System.Data.Entity.EntityState.Deleted;
                     }

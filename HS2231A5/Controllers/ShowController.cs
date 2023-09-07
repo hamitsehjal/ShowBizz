@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HS2231A5.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -9,7 +10,8 @@ namespace HS2231A5.Controllers
     public class ShowController : Controller
         {
         private Manager m = new Manager();
-        // GET: Show
+
+        // GET ALL: Show
         public ActionResult Index()
             {
             // fetch the collection
@@ -17,76 +19,68 @@ namespace HS2231A5.Controllers
             return View(shows);
             }
 
-        // GET: Show/Details/5
-        public ActionResult Details(int id)
+        // GET ONE: Show/Details/5
+        public ActionResult Details(int? id)
             {
-            return View();
+            // try to find the item
+            var show = m.ShowsGetOne(id.GetValueOrDefault());
+            if (show == null)
+                return HttpNotFound();
+
+            return View(show);
             }
 
-        // GET: Show/Create
-        public ActionResult Create()
+        // ADD NEW 'Episode' for this 'Show'
+        // GET: Show/{id}/AddEpisode
+        [HttpGet]
+        [Authorize(Roles = "Clerk")]
+        [Route("Show/{id}/addEpisode")]
+        public ActionResult AddEpisode(int? id)
             {
-            return View();
+            // Attempt to get the associated 'Show'
+            var show = m.ShowsGetOne(id.GetValueOrDefault());
+
+            if (show == null)
+                {
+                return HttpNotFound();
+                }
+
+            // Create and Configure a "Form" Object
+            var formModel = new EpisodeAddFormViewModel();
+            formModel.ShowId = show.Id;
+            formModel.ShowName = show.Name;
+
+            formModel.GenreList = new SelectList(
+                items: m.GenresGetAll(),
+                dataValueField: "Name",
+                dataTextField: "Name"
+                );
+            return View(formModel);
             }
 
-        // POST: Show/Create
+        // POST: Show/{id}/AddEpisode
         [HttpPost]
-        public ActionResult Create(FormCollection collection)
+        [Authorize(Roles = "Clerk")]
+        [Route("Show/{id}/addEpisode")]
+        [ValidateInput(false)]
+        public ActionResult AddEpisode(EpisodeAddViewModel newEpisode)
             {
-            try
+            // Validate the input
+            if (!ModelState.IsValid)
                 {
-                // TODO: Add insert logic here
-
-                return RedirectToAction("Index");
+                return View(newEpisode);
                 }
-            catch
+
+            // Process the input
+            var addedItem = m.EpisodeAdd(newEpisode);
+
+            if (addedItem == null) { return View(addedItem); }
+
+            else
                 {
-                return View();
+                return RedirectToAction("details", "Episode", new { id = addedItem.Id });
                 }
             }
 
-        // GET: Show/Edit/5
-        public ActionResult Edit(int id)
-            {
-            return View();
-            }
-
-        // POST: Show/Edit/5
-        [HttpPost]
-        public ActionResult Edit(int id, FormCollection collection)
-            {
-            try
-                {
-                // TODO: Add update logic here
-
-                return RedirectToAction("Index");
-                }
-            catch
-                {
-                return View();
-                }
-            }
-
-        // GET: Show/Delete/5
-        public ActionResult Delete(int id)
-            {
-            return View();
-            }
-
-        // POST: Show/Delete/5
-        [HttpPost]
-        public ActionResult Delete(int id, FormCollection collection)
-            {
-            try
-                {
-                // TODO: Add delete logic here
-
-                return RedirectToAction("Index");
-                }
-            catch
-                {
-                return View();
-                }
-            }
         }
     }
