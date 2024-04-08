@@ -1,6 +1,7 @@
 # ShowBizz - II
 
-Effortlessly upload various media items, such as PDF documents, images, audio files, and videos while managing your production's operations under ONE PLATFORM!!
+- A CRM for television industry companies to efficiently manage actors, TV series, and episodes.
+- Effortlessly upload various media items, such as PDF documents, images, audio files, and videos while managing your production's operations under ONE PLATFORM!!
 
 ## Key highlights of ShowBizz
 ShowBizz II concentrates its efforts on four key job titles to fulfill the requirements of this task:
